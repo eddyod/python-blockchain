@@ -1,6 +1,8 @@
 from functools import reduce
 from collections import OrderedDict
 from hash_util import hash_string_256, hash_block
+import json
+
 
 MINING_REWARD = 10
 GENESIS_BLOCK = {
@@ -17,17 +19,35 @@ participants = {owner}
 
 def save_data():
     with open('blockchain.txt', mode='w') as f:
-        f.write(str(blockchain))
+        f.write(json.dumps(blockchain))
         f.write('\n')
-        f.write(str(open_transactions))
+        f.write(json.dumps(open_transactions))
+
 
 def load_data():
     with open('blockchain.txt', mode='r') as f:
         file_contents = f.readlines()
         global blockchain
         global open_transactions
-        blockchain = file_contents[0]
-        open_transactions = file_contents[1]
+        blockchain = json.loads(file_contents[0][:-1])
+        updated_blockchain = []
+        for block in blockchain:
+            updated_block = {
+                'previous_hash': block['previous_hash'],
+                'index': block['index'],
+                'proof': block['proof'],
+                'transactions': [OrderedDict([('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])]) for tx in block['transactions']]
+                }
+            updated_blockchain.append(updated_block)
+        blockchain = updated_blockchain
+
+        open_transactions = json.loads(file_contents[1])
+        updated_blockchain = []
+        for tx in open_transactions:
+            updated_block = OrderedDict([('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])m
+            updated_blockchain.append(updated_block)
+        open_transactions = updated_blockchain
+
 
 
 load_data()
@@ -98,7 +118,6 @@ def mine_block():
         'proof': proof
         }
     blockchain.append(block)
-    save_data()
     return True
 
 
@@ -185,6 +204,7 @@ while waiting_for_input:
     elif user_choice == 'm':
         if mine_block():
             open_transactions = []
+            save_data()
     elif user_choice == 'h':
         if len(blockchain) >= 1:
             blockchain[0] = {
