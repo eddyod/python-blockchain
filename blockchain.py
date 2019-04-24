@@ -9,14 +9,8 @@ from hash_util import hash_string_256, hash_block
 MINING_REWARD = 10
 
 # Our starting block for the blockchain
-genesis_block = {
-    'previous_hash': '',
-    'index': 0,
-    'transactions': [],
-    'proof': 100
-}
 # Initializing our (empty) blockchain list
-blockchain = [genesis_block]
+blockchain = []
 # Unhandled transactions
 open_transactions = []
 # We are the owner of this blockchain node, hence this is our identifier (e.g. for sending coins)
@@ -26,11 +20,11 @@ participants = {owner}
 
 
 def load_data():
+    global blockchain
+    global open_transactions
     try:
         with open('blockchain.txt', mode='r') as f:
             file_content = f.readlines()
-            global blockchain
-            global open_transactions
             blockchain = json.loads(file_content[0][:-1])
             updated_blockchain = []
             for block in blockchain:
@@ -50,20 +44,29 @@ def load_data():
                     [('sender', tx['sender']), ('recipient', tx['recipient']), ('amount', tx['amount'])])
                 updated_transactions.append(updated_transaction)
             open_transactions = updated_transactions
-    except (ValueError, IOError):
-        print('File not found or value error.')
-    finally:
-        print('Cleanup load data.')
+    except (IOError, IndexError):
+        print('File does not exist ir')
+        genesis_block = {
+            'previous_hash': '',
+            'index': 0,
+            'transactions': [],
+            'proof': 100
+        }
+        blockchain = [genesis_block]
+        open_transactions = []
         
 
 load_data()
 
 
 def save_data():
-    with open('blockchain.txt', mode='w') as f:
-        f.write(json.dumps(blockchain))
-        f.write('\n')
-        f.write(json.dumps(open_transactions))
+    try:
+        with open('blockchain.txt', mode='w') as f:
+            f.write(json.dumps(blockchain))
+            f.write('\n')
+            f.write(json.dumps(open_transactions))
+    except IOError:
+        print('Saving failed')
 
 
 def valid_proof(transactions, last_hash, proof):
