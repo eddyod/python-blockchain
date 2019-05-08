@@ -24,7 +24,7 @@ class Node:
     def print_blockchain_elements(self):
         """ Output all blocks of the blockchain. """
         # Output the blockchain list to the console
-        for block in self.blockchain.chain:
+        for block in self.blockchain.get_chain():
             print('Outputting Block')
             print(block)
         else:
@@ -36,7 +36,6 @@ class Node:
         # A while loop for the user input interface
         # It's a loop that exits once waiting_for_input becomes False or when break is called
         while waiting_for_input:
-            verifier = Verification()
             print('Please choose')
             print('a: Add a new transaction value')
             print('m: Mine a new block')
@@ -52,13 +51,13 @@ class Node:
                     print('Added transaction!')
                 else:
                     print('Transaction failed!')
-                print(self.blockchain.open_transactions)
+                print(self.blockchain.get_open_transactions())
             elif user_choice == 'm':
                 self.blockchain.mine_block()
             elif user_choice == 'p':
                 self.print_blockchain_elements()
             elif user_choice == 'c':
-                if verifier.verify_transactions(self.open_transactions, self.blockchain.get_balance):
+                if Verification.verify_transactions(self.blockchain.get_open_transactions(), self.blockchain.get_balance):
                     print('All transactions are valid')
                 else:
                     print('There are invalid transactions')
@@ -67,7 +66,7 @@ class Node:
                 waiting_for_input = False
             else:
                 print('Input was invalid, please pick a value from the list!')
-            if not verifier.verify_chain(self.blockchain.chain):
+            if not Verification.verify_chain(self.blockchain.get_chain()):
                 self.print_blockchain_elements()
                 print('Invalid blockchain!')
                 # Break out of the loop
