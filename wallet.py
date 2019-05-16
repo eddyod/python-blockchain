@@ -35,8 +35,10 @@ class Wallet:
                 private_key = keys[1]
                 self.public_key = public_key
                 self.private_key = private_key
+                return True
         except (IOError, IndexError):
             print('Loading keys failed')
+            return False
 
 
     def generate_keys(self):

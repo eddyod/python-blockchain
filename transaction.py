@@ -7,6 +7,7 @@ class Transaction(Printable):
         self.recipient = recipient
         self.amount = amount
         self.signature = signature
+        
 
 
     def to_ordered_dict(self):

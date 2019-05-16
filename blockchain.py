@@ -49,9 +49,9 @@ class Blockchain:
     def save_data(self):
         try:
             with open('blockchain.txt', mode='w') as f:
-                saveable_chain = [block.__dict__ for block in 
+                saveable_chain = [block.__dict__ for block in
                     [Block(block_el.index, block_el.previous_hash, [tx.__dict__ for tx in block_el.transactions], 
-                        block_el.proof, block_el.timestamp) for block_el in self.__chain]]
+                            block_el.proof, block_el.timestamp) for block_el in self.__chain]]
                 f.write(json.dumps(saveable_chain))
                 f.write('\n')
                 saveable_tx = [tx.__dict__ for tx in self.__open_transactions]
@@ -75,6 +75,8 @@ class Blockchain:
         Arguments:
             :participant: The person for whom to calculate the balance.
         """
+        if self.hosting_node == None:
+            return None
         participant = self.hosting_node
         # Fetch a list of all sent coin amounts for the given person (empty lists are returned if the person was NOT the sender)
         # This fetches sent amounts of transactions that were already included in blocks of the blockchain
