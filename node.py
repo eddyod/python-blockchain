@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 from wallet import Wallet
@@ -8,6 +8,11 @@ app = Flask(__name__)
 wallet = Wallet()
 blockchain = Blockchain(wallet.public_key)
 CORS(app)
+
+
+@app.route('/', methods=['GET'])
+def get_ui():
+    return send_from_directory('views', 'node.html')
 
 
 
@@ -110,9 +115,14 @@ def add_transaction():
             'message': 'Creating transaction failed.'
         }
         status = 400
-    return jsonify(response), 400
+    return jsonify(response), status
 
 
+@app.route('/transactions', methods=['GET'])
+def get_open_transaction():
+    transactions = blockchain.get_open_transactions()
+    dict_transactions = [tx.__dict__ for tx in transactions]
+    return jsonify(dict_transactions), 200
 
 
 
