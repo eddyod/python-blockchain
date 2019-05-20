@@ -129,6 +129,36 @@ def get_open_transaction():
     return jsonify(dict_transactions), 201
 
 
+@app.route('/broadcast-transaction', methods=['POST'])
+def broadcast_transaction():
+    values = request.get_json()
+    if not values:
+        response = {
+            'message': 'No data found'
+        }
+        return jsonify(response), 400
+    required = ['sender', 'recipient', 'signature', 'amount']
+    if not all(key in values for key in required):
+        response = {
+            'message': 'Some data is missing.'
+        }
+        return jsonify(response), 400
+    success = blockchain.add_transaction(values['recipient'], values['sender'], values['signature'], values['amount'], is_receiving=True)
+    if success:
+        response = {
+            'message': 'Added transaction OK.',
+            'sender': values['sender'],
+            'recipient': values['recipient'],
+            'signature': values['signature'],
+            'amount': values['amount']
+        }
+        return jsonify(response), 200
+    else:
+        response = {
+            'message': 'Added transaction NOT OK.'
+        }
+        return jsonify(response), 500
+
 
 
 
