@@ -136,9 +136,9 @@ class Blockchain:
                 for node in self.__peer_nodes:
                     url = 'http://{}/broadcast-transaction'.format(node)
                     try:
-                        response = request.post(url, json={'sender': sender, 'recipient': recipient, 'signature': signature, 'amount': amount})
+                        response = requests.post(url, json={'sender': sender, 'recipient': recipient, 'signature': signature, 'amount': amount})
                         if response.status_code == 400 or response.status_code == 500:
-                            print('Transaction declined from peer.')
+                            print('Transaction declined, needs resolving')
                             return False
                     except requests.exceptions.ConnectionError:
                         continue
@@ -174,6 +174,17 @@ class Blockchain:
         self.__open_transactions = []
         self.save_data()
         return block
+
+    def add_block(self, block):
+        transactions = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in block['transaction']]
+        proof_is_valid = Verification.valid_proof(transactions, block['previous_hash'], block['proof_of_work'])
+        hashes_match = hash_block(self.chain[-1]) == block['previous_hash']
+        if not proof_is_valid or not hashes_match:
+            return False
+        converted_block = Block(block['index'], block['previous_hash'], transactions, block['proof'], block['timestamp'])
+        self.__chain.append(converted_block)
+        self.save_data()
+        return True
 
     def add_peer_node(self, node):
         """Adds a new node"""

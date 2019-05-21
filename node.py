@@ -147,10 +147,12 @@ def broadcast_transaction():
     if success:
         response = {
             'message': 'Added transaction OK.',
-            'sender': values['sender'],
-            'recipient': values['recipient'],
-            'signature': values['signature'],
-            'amount': values['amount']
+            'transaction' : {
+                'sender': values['sender'],
+                'recipient': values['recipient'],
+                'signature': values['signature'],
+                'amount': values['amount']
+            }
         }
         return jsonify(response), 200
     else:
@@ -158,6 +160,25 @@ def broadcast_transaction():
             'message': 'Added transaction NOT OK.'
         }
         return jsonify(response), 500
+
+@app.route('/broadcast-block', methods=['POST'])
+def broadcast_block():
+    values = request.get_json()
+    if not values:
+        response = {'message': 'No data found'}
+        return jsonify(response), 400
+    if 'block' not in values:
+        response = {'message': 'No block found'}
+        return jsonify(response), 400
+    block = values['block']
+    if block['index'] == blockchain.chain[-1].index + 1:
+        blockchain.add_block(block)
+    elif block['index'] > blockchain.chain[-1].index:
+        pass
+    else:
+        response = {'message': 'Blockchain is shorter, not added'}
+        return jsonify(response), 409
+
 
 
 
